@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import LoginForm from ".";
-import validator from "email-validator";
+import { validateEmail, validatePassword } from "./validation";
 
 test("renders sign in page", () => {
   render(<LoginForm />);
@@ -10,49 +10,50 @@ test("renders sign in page", () => {
 
 // Add more unit test here
 
-it("validates email address", () => {
-  const validate = jest.fn();
-  const email1 = "test";
-  const email2 = "test@test.com";
-  expect(validator.validate(email1)).toBe(false);
-  expect(validator.validate(email2)).toBe(true);
+// import validator from "email-validator";
+// test("validates email address", () => {
+//   const validate = jest.fn();
+//   expect(validator.validate("test")).toBe(false);
+//   expect(validator.validate("test@test.com")).toBe(true);
+// });
+
+test("Email should contain @ symbol", () => {
+  expect(validateEmail("test")).toBe(false);
 });
 
-it("returns error message", () => {
-  const pwRegex =
-    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\]{};':"\\|,.<>?]).{8,}$/;
-  const letterCase = /^(?=.*[a-z])(?=.*[A-Z])/;
-  const digit = /^(?=.*\d)/;
-  const special = /^(?=.*[!@#$%^&*()_+\-=\]{};':"\\|,.<>?])/;
+test("Email should contain correct domain", () => {
+  expect(validateEmail("test@test.c")).toBe(false);
+});
 
-  const validatePassword = jest.fn((password) => {
-    if (!pwRegex.test(password)) {
-      if (password.length < 8) {
-        return "Password should be 8 or more characters";
-      } else if (!letterCase.test(password)) {
-        return "Password should contain minimum 1 character for both uppercase and lowercase letter";
-      } else if (!digit.test(password)) {
-        return "Password should contain minimum 1 digit of numeric value";
-      } else if (!special.test(password)) {
-        return "Password should contain minimum 1 special character";
-      }
-    }
-    return null;
-  });
+test("Valid email should return true", () => {
+  expect(validateEmail("test@test.com")).toBe(true);
+});
 
+test("Password should be 8 or more characters", () => {
   expect(validatePassword("test")).toBe(
     "Password should be 8 or more characters"
   );
+});
+
+test("Password should contain minimum 1 character for both uppercase and lowercase letter", () => {
   expect(validatePassword("testtest")).toBe(
     "Password should contain minimum 1 character for both uppercase and lowercase letter"
   );
+  expect(validatePassword("TESTTEST")).toBe(
+    "Password should contain minimum 1 character for both uppercase and lowercase letter"
+  );
+});
+
+test("Password should contain minimum 1 digit of numeric value", () => {
   expect(validatePassword("tesTtest")).toBe(
     "Password should contain minimum 1 digit of numeric value"
   );
-
+});
+test("Password should contain minimum 1 special character", () => {
   expect(validatePassword("tesT1234")).toBe(
     "Password should contain minimum 1 special character"
   );
-
-  expect(validatePassword("tesT123$")).toBeNull();
+});
+test("Valid password should pass the validation and return an empty string", () => {
+  expect(validatePassword("tesT123$")).toBe("");
 });

@@ -8,41 +8,12 @@ import Grid from "@mui/material/Grid";
 import Snackbar from "@mui/material/Snackbar";
 import Typography from "@mui/material/Typography";
 import logo from "../../assets/logo.svg";
-import validator from "email-validator";
+import { validateEmail, validatePassword } from "./validation";
 
 export default function LoginForm() {
   const [showAlert, setShowAlert] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
-
-  const validatePassword = (password) => {
-    const pwRegex =
-      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\]{};':"\\|,.<>?]).{8,}$/;
-    const letterCase = /^(?=.*[a-z])(?=.*[A-Z])/;
-    const digit = /^(?=.*\d)/;
-    const special = /^(?=.*[!@#$%^&*()_+\-=\]{};':"\\|,.<>?])/;
-
-    if (!pwRegex.test(password)) {
-      if (password.length < 8) {
-        return "Password should be 8 or more characters";
-      } else if (!letterCase.test(password)) {
-        return "Password should contain minimum 1 character for both uppercase and lowercase letter";
-      } else if (!digit.test(password)) {
-        return "Password should contain minimum 1 digit of numeric value";
-      } else if (!special.test(password)) {
-        return "Password should contain minimum 1 special character";
-      }
-    }
-
-    return null;
-  };
-
-  const validateEmail = (email) => {
-    if (!validator.validate(email)) {
-      return setEmailError(true);
-    }
-    return setEmailError(false);
-  };
 
   const validateForm = (event) => {
     event.preventDefault();
@@ -51,18 +22,29 @@ export default function LoginForm() {
     const password = data.get("password");
 
     // Add validation code here
-    setPasswordError(validatePassword(password));
-    validateEmail(email);
-
-    if (passwordError === null && !emailError) {
-      setShowAlert("Login Successful");
+    const validatedEmail = validateEmail(email);
+    if (validatedEmail) {
+      setEmailError(false);
+    } else {
+      setEmailError(true);
     }
+
+    const validatedPassword = validatePassword(password);
+    if (validatedPassword) {
+      setPasswordError(true);
+    } else {
+      setPasswordError(false);
+    }
+
+    return !emailError && !passwordError;
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    validateForm(event);
+    if (validateForm(event)) {
+      setShowAlert("Login Successful");
+    }
   };
 
   return (
